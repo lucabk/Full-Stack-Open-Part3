@@ -44,6 +44,21 @@ app.get('/info', (req, res) => {
   res.send(text)
 })
 
+//GET a single entry (the parameters for routes can be defined using the colon syntax)
+app.get('/api/persons/:id', (req, res) => {
+  /* The captured values are populated in the req.params object, with the name of the route parameter 
+  specified in the path as their respective keys.*/
+  const id = req.params.id
+  //the number variable is set to undefined if no matching note is found. 
+  number = phonebook.find( n => n.id === id)
+  if(number) 
+    res.json(number)
+  else 
+    /*Use ".end()" to quickly end the response without any data. 
+    If no note is found, the server should respond with the status code 404 not found*/
+    res.status(404).end()
+})
+
 const PORT = 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
