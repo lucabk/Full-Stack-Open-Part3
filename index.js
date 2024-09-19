@@ -28,12 +28,20 @@ let phonebook = [
 ]
 
 //routes:
-//GET:  defines an event handler that handles HTTP GET requests made to the phonebook path of the application
+//GET: defines an event handler that handles HTTP GET requests made to the phonebook path of the application
 app.get('/api/persons', (req, res) => {
     /*The request is responded to with the json method of the response object. Calling the method will send the 
     phonebook array that was passed to it as a JSON formatted string. Express automatically sets the Content-Type 
     header with the appropriate value of application/json.*/
     res.json(phonebook)
+})
+
+//GET The page has to show the time that the request was received and how many entries are in the phonebook 
+app.get('/info', (req, res) => {
+  req.requestTime = new Date()
+  let text = `<p>Phonebook has info for ${phonebook.length} people</p><p>${req.requestTime.toString()}</p>`
+  //There can only be one response.send() statement in an Express app route
+  res.send(text)
 })
 
 const PORT = 3001
