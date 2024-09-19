@@ -77,6 +77,15 @@ app.delete('/api/persons/:id', (req, res) => {
 //POST (Without the json-parser, the body property would be undefined)
 app.post('/api/persons', (req, res) => {
   const body = req.body
+
+  //The request is not allowed to succeed, if:The name or number is missing
+  if (body.name === "" || body.number === "")
+    return res.status(400).json({ error: 'name or number required' })
+  //The name already exists in the phonebook
+  if (phonebook.find( n => n.name === body.name))
+    return res.status(400).json({ error: 'name must be unique' })
+   
+
   const newNumber = {
     "id": generateId(),
     "name":body.name,
@@ -84,6 +93,7 @@ app.post('/api/persons', (req, res) => {
   }
   console.log(req.headers)//print all of the request headers
   console.log(newNumber)//print the new entry
+
   phonebook = phonebook.concat(newNumber)//add the new entry
   res.json(newNumber)//send back the new entry
 })
