@@ -2,6 +2,9 @@
 const express = require("express")
 //that is used to create an Express application stored in the app variable
 const app = express()
+/*The json-parser takes the JSON data of a request, transforms it into a JavaScript object and then 
+attaches it to the body property of the request object before the route handler is called*/
+app.use(express.json())
 
 //data
 let phonebook = [
@@ -26,6 +29,8 @@ let phonebook = [
     "number": "39-23-6423122"
   }
 ]
+
+generateId = () => String(Math.floor(Math.random() * 1000000))
 
 //routes:
 //GET: defines an event handler that handles HTTP GET requests made to the phonebook path of the application
@@ -66,6 +71,21 @@ app.delete('/api/persons/:id', (req, res) => {
   phonebook = phonebook.filter( n => n.id !== id)
   //The 204 (No Content) status code indicates that the server has successfully fulfilled the request and that there is no additional content to send in the response content
   res.status(204).end()
+})
+
+
+//POST (Without the json-parser, the body property would be undefined)
+app.post('/api/persons', (req, res) => {
+  const body = req.body
+  const newNumber = {
+    "id": generateId(),
+    "name":body.name,
+    "number":body.number
+  }
+  console.log(req.headers)//print all of the request headers
+  console.log(newNumber)//print the new entry
+  phonebook = phonebook.concat(newNumber)//add the new entry
+  res.json(newNumber)//send back the new entry
 })
 
 const PORT = 3001
