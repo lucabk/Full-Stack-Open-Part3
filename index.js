@@ -59,6 +59,15 @@ app.get('/api/persons/:id', (req, res) => {
     res.status(404).end()
 })
 
+
+//DELETE happens by making an HTTP DELETE request to the URL of the resource
+app.delete('/api/persons/:id', (req, res) => {
+  const id = req.params.id
+  phonebook = phonebook.filter( n => n.id !== id)
+  //The 204 (No Content) status code indicates that the server has successfully fulfilled the request and that there is no additional content to send in the response content
+  res.status(204).end()
+})
+
 const PORT = 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
