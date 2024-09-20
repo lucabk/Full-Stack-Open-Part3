@@ -8,8 +8,10 @@ const app = express()
 /*The json-parser middleware takes the JSON data of a request, transforms it into a JavaScript object and then 
 attaches it to the body property of the request object before the route handler is called*/
 app.use(express.json())
-//logging with morgan
-app.use(morgan('tiny'))
+//custom token
+morgan.token('body', (req) => JSON.stringify(req.body));
+//logging with morgan using the custom token
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 
 //This middleware will be used for catching requests made to non-existent routes
 const unknownEndpoint = (request, response) => {
