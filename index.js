@@ -1,10 +1,20 @@
 //we're importing express, which this time is a function 
 const express = require("express")
+//morgan middleware
+const morgan = require("morgan")
 //that is used to create an Express application stored in the app variable
 const app = express()
-/*The json-parser takes the JSON data of a request, transforms it into a JavaScript object and then 
+
+/*The json-parser middleware takes the JSON data of a request, transforms it into a JavaScript object and then 
 attaches it to the body property of the request object before the route handler is called*/
 app.use(express.json())
+//logging with morgan
+app.use(morgan('tiny'))
+
+//This middleware will be used for catching requests made to non-existent routes
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
 
 //data
 let phonebook = [
@@ -91,12 +101,15 @@ app.post('/api/persons', (req, res) => {
     "name":body.name,
     "number":body.number
   }
-  console.log(req.headers)//print all of the request headers
-  console.log(newNumber)//print the new entry
+  //console.log(req.headers)//print all of the request headers
+  //console.log(newNumber)//print the new entry
 
   phonebook = phonebook.concat(newNumber)//add the new entry
   res.json(newNumber)//send back the new entry
 })
+
+//catch unknown route
+app.use(unknownEndpoint)
 
 const PORT = 3001
 app.listen(PORT, () => {
