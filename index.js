@@ -1,13 +1,22 @@
 //we're importing express, which this time is a function 
 const express = require("express")
-//morgan middleware
-const morgan = require("morgan")
 //that is used to create an Express application stored in the app variable
 const app = express()
+
+/*To make Express show static content, the page index.html and the JavaScript, etc., it fetches, 
+we need a built-in middleware from Express called static.*/
+app.use(express.static('dist'))
+
+//CORS: take the middleware to use and allow for requests from all origins
+const cors = require('cors')
+app.use(cors())
 
 /*The json-parser middleware takes the JSON data of a request, transforms it into a JavaScript object and then 
 attaches it to the body property of the request object before the route handler is called*/
 app.use(express.json())
+
+//morgan middleware
+const morgan = require("morgan")
 //custom token
 morgan.token('body', (req) => JSON.stringify(req.body));
 //logging with morgan using the custom token
@@ -113,7 +122,7 @@ app.post('/api/persons', (req, res) => {
 //catch unknown route
 app.use(unknownEndpoint)
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
