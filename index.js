@@ -59,14 +59,11 @@ app.get('/api/persons/:id', (req, res) => {
   /* The captured values are populated in the req.params object, with the name of the route parameter 
   specified in the path as their respective keys.*/
   const id = req.params.id
-  //the number variable is set to undefined if no matching note is found. 
-  number = phonebook.find( n => n.id === id)
-  if(number) 
-    res.json(number)
-  else 
-    /*Use ".end()" to quickly end the response without any data. 
-    If no note is found, the server should respond with the status code 404 not found*/
-    res.status(404).end()
+ //Using Mongoose's findById method, fetching an individual number:
+  Person.findById(id).then(number => {
+  res.json(number)
+  console.log(number.toJSON())
+})
 })
 
 
@@ -82,25 +79,18 @@ app.delete('/api/persons/:id', (req, res) => {
 //POST (Without the json-parser, the body property would be undefined)
 app.post('/api/persons', (req, res) => {
   const body = req.body
-
-  //The request is not allowed to succeed, if:The name or number is missing
-  if (body.name === "" || body.number === "")
-    return res.status(400).json({ error: 'name or number required' })
-  //The name already exists in the phonebook
-  if (phonebook.find( n => n.name === body.name))
-    return res.status(400).json({ error: 'name must be unique' })
-   
-
-  const newNumber = {
-    "id": generateId(),
+  //new entry
+  const newNumber = new Person({
     "name":body.name,
     "number":body.number
-  }
-  //console.log(req.headers)//print all of the request headers
-  //console.log(newNumber)//print the new entry
-
-  phonebook = phonebook.concat(newNumber)//add the new entry
-  res.json(newNumber)//send back the new entry
+  })
+  newNumber.save().then(savedPerson => {
+    /*The response is sent inside of the callback function for the save operation. 
+    This ensures that the response is sent only if the operation succeeded.
+    The savedNote parameter in the callback function is the saved and newly created entry. The data 
+    sent back in the response is the formatted version created automatically with the toJSON method*/
+    res.json(savedPerson)
+  })
 })
 
 //catch unknown route
