@@ -22,6 +22,7 @@ app.use(express.json())
 
 //morgan middleware
 const morgan = require("morgan");
+const phonebook = require('./models/phonebook');
 //custom token
 morgan.token('body', (req) => JSON.stringify(req.body));
 //logging with morgan using the custom token
@@ -60,9 +61,12 @@ app.get('/api/persons', (req, res) => {
 //GET The page has to show the time that the request was received and how many entries are in the phonebook 
 app.get('/info', (req, res) => {
   req.requestTime = new Date()
-  let text = `<p>Phonebook has info for ${phonebook.length} people</p><p>${req.requestTime.toString()}</p>`
-  //There can only be one response.send() statement in an Express app route
-  res.send(text)
+  Person.find({}).then( phonebook => {
+    let text = `<p>Phonebook has info for ${phonebook.length} people</p><p>${req.requestTime.toString()}</p>`
+    //There can only be one response.send() statement in an Express app route
+    res.send(text)
+  })
+
 })
 
 //GET a single entry (the parameters for routes can be defined using the colon syntax)
