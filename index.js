@@ -22,7 +22,6 @@ app.use(express.json())
 
 //morgan middleware
 const morgan = require("morgan");
-const phonebook = require('./models/phonebook');
 //custom token
 morgan.token('body', (req) => JSON.stringify(req.body));
 //logging with morgan using the custom token
@@ -68,11 +67,16 @@ app.get('/api/persons/:id', (req, res) => {
 
 
 //DELETE happens by making an HTTP DELETE request to the URL of the resource
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res,next) => {
   const id = req.params.id
-  phonebook = phonebook.filter( n => n.id !== id)
-  //The 204 (No Content) status code indicates that the server has successfully fulfilled the request and that there is no additional content to send in the response content
-  res.status(204).end()
+  Person.findByIdAndDelete(id)
+  /*In both of the "successful" cases of deleting a resource, the backend responds with the status code 204. 
+  The two different cases are deleting a note that exists, and deleting a note that does not exist in the databas*/
+  .then( result => {
+//The 204 (No Content) status code indicates that the server has successfully fulfilled the request and that there is no additional content to send in the response content
+    res.status(204).end()
+  })
+  .catch(err => next(err))// Pass errors to Express
 })
 
 
@@ -93,8 +97,11 @@ app.post('/api/persons', (req, res) => {
   })
 })
 
-//catch unknown route
+/*catch unknown route. It's also important that the middleware for handling unsupported routes 
+is next to the last middleware that is loaded into Express, just before the error handler*/
 app.use(unknownEndpoint)
+
+//the error handler needs to come at the very end, after the unknown endpoints handler.
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
