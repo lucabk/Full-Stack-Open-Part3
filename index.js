@@ -32,7 +32,7 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
-//middleware for error handling
+//error handler middleware
 const errorHandler = (error, req, res, next) => {
   console.log("Error handler message:",error.message)
   /*The error handler checks if the error is a CastError exception, in which case we know that the error was caused 
@@ -115,6 +115,24 @@ app.post('/api/persons', (req, res) => {
     sent back in the response is the formatted version created automatically with the toJSON method*/
     res.json(savedPerson)
   })
+})
+
+//PUT
+app.put('/api/persons/:id', (req, res, next) => {
+  const body = req.body
+  //regular JS object (not a new note object created with the Person constructor function)
+  const newNumber = {
+    name:body.name,
+    number:body.number
+  }
+  /*Model.findByIdAndUpdate(id, update, options) 
+  -id «Object|Number|String» value of _id to query by, -[update] «Object», 
+  -[options.new=false] «Boolean» if true, return the modified document rather than the original*/
+  Person.findByIdAndUpdate(req.params.id, newNumber, {new:true})
+    .then( upNumber => {
+      res.json(upNumber)
+    })
+    .catch( error => next(error))
 })
 
 /*catch unknown route. It's also important that the middleware for handling unsupported routes 
