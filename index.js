@@ -32,6 +32,18 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
+//middleware for error handling
+const errorHandler = (error, req, res, next) => {
+  console.log("Error handler message:",error.message)
+  /*The error handler checks if the error is a CastError exception, in which case we know that the error was caused 
+  by an invalid object id for Mongo. In this situation, the error handler will send a response to the browser with 
+  the response object passed as a parameter. 
+  In all other error situations, the middleware passes the error forward to the default Express error handler*/
+  if (error.name === 'CastError') {
+    return res.status(400).send({ error: 'malformatted id' })
+  } 
+    next(error)// Pass errors to Express
+}
 
 //routes:
 //GET: defines an event handler that handles HTTP GET requests made to the phonebook path of the application
@@ -54,20 +66,28 @@ app.get('/info', (req, res) => {
 })
 
 //GET a single entry (the parameters for routes can be defined using the colon syntax)
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
   /* The captured values are populated in the req.params object, with the name of the route parameter 
   specified in the path as their respective keys.*/
   const id = req.params.id
  //Using Mongoose's findById method, fetching an individual number:
   Person.findById(id).then(number => {
-  res.json(number)
-  console.log(number.toJSON())
-})
+    if(number){
+      res.json(number)
+      console.log(number.toJSON())
+    }
+    else  
+      res.status(404).end()//person not found
+    })
+  /*Given a malformed id as an argument, the findById method will throw an error causing the returned 
+  promise to be rejected. It passes the error forward with the next function. 
+  The next function is passed to the handler as the third parameter:*/
+  .catch(error => next(error))
 })
 
 
 //DELETE happens by making an HTTP DELETE request to the URL of the resource
-app.delete('/api/persons/:id', (req, res,next) => {
+app.delete('/api/persons/:id', (req, res, next) => {
   const id = req.params.id
   Person.findByIdAndDelete(id)
   /*In both of the "successful" cases of deleting a resource, the backend responds with the status code 204. 
@@ -76,7 +96,7 @@ app.delete('/api/persons/:id', (req, res,next) => {
 //The 204 (No Content) status code indicates that the server has successfully fulfilled the request and that there is no additional content to send in the response content
     res.status(204).end()
   })
-  .catch(err => next(err))// Pass errors to Express
+  .catch(err => next(err))//next with an argument -> the execution will continue to the error handler middleware
 })
 
 
@@ -102,6 +122,7 @@ is next to the last middleware that is loaded into Express, just before the erro
 app.use(unknownEndpoint)
 
 //the error handler needs to come at the very end, after the unknown endpoints handler.
+app.use(errorHandler)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
