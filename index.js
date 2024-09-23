@@ -41,8 +41,10 @@ const errorHandler = (error, req, res, next) => {
   the response object passed as a parameter. 
   In all other error situations, the middleware passes the error forward to the default Express error handler*/
   if (error.name === 'CastError') {
-    return res.status(400).send({ error: 'malformatted id' })
+    return res.status(400).json({ error: 'malformatted id' })
   } 
+  else if (error.name === 'ValidationError')
+    return res.status(400).json({error: error.message})
     next(error)// Pass errors to Express
 }
 
@@ -105,7 +107,7 @@ app.delete('/api/persons/:id', (req, res, next) => {
 
 
 //POST (Without the json-parser, the body property would be undefined)
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
   //new entry
   const newNumber = new Person({
@@ -119,21 +121,22 @@ app.post('/api/persons', (req, res) => {
     sent back in the response is the formatted version created automatically with the toJSON method*/
     res.json(savedPerson)
   })
+  .catch(error => next(error))
 })
 
 //PUT
 app.put('/api/persons/:id', (req, res, next) => {
-  const body = req.body
-  //regular JS object (not a new note object created with the Person constructor function)
-  const newNumber = {
-    name:body.name,
-    number:body.number
-  }
+  const {name, number} = req.body
+
   /*Model.findByIdAndUpdate(id, update, options) 
   -id «Object|Number|String» value of _id to query by, -[update] «Object», 
   -[options.new=false] «Boolean» if true, return the modified document rather than the original*/
-  Person.findByIdAndUpdate(req.params.id, newNumber, {new:true})
+  Person.findByIdAndUpdate(req.params.id, {name,number}, {new:true, runValidators:true, context:'query'})
     .then( upNumber => {
+      //if upNumber === NULL return a 404 (it will not trigger catch automatically)
+      if (!upNumber) {
+        return res.status(400).json({ error: 'Person not found' });
+      }
       res.json(upNumber)
     })
     .catch( error => next(error))
