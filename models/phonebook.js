@@ -1,18 +1,22 @@
 //import library
 const mongoose = require('mongoose')
 //set url  connection to cloud db
-const url = process.env.MONGODB_URI
+const config = require('../utils/config')
+const url = config.MONGODB_URI
+//logger
+const logger = require('../utils/logger')
 //allows you to query fields that are not defined in the schema
 mongoose.set('strictQuery',false)
 
+
 //connection to db
-console.log('connecting to', url,'...')
+logger.info('connecting to', url,'...')
 mongoose.connect(url)
   .then(() => {
-    console.log('connected to MongoDB')
+    logger.info('connected to MongoDB')
   })
   .catch(error => {
-    console.log('error connecting to MongoDB:', error.message)
+    logger.info('error connecting to MongoDB:', error.message)
   })
 
 //schema definition and (custom) validation
