@@ -3,4 +3,6 @@ Course website: https://fullstackopen.com/en/
 
 Render (free plan*): https://full-stack-open-part3-f8wy.onrender.com/
 
+Main Repository: https://github.com/lucabk/Full-Stack-Open
+
 *Free instances spin down after periods of inactivity
